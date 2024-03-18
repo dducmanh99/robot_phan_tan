@@ -18,8 +18,8 @@ class nn_epuck:
         self.v = np.array([[0.0]]*2)
         self.dis = np.array([[0.0]]*8)
         self.alpha = np.array([
-            [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01], 
-            [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
+            [0.01, 0.02, 0.01, 0.01, 0.01, 0.03, 0.05, 0.02], 
+            [0.02, 0.05, 0.03, 0.01, 0.01, 0.01, 0.02, 0.01]
         ])
         self.noise = np.array([[0.0], [0.0]])
         self.v0 = np.array([[0.0], [0.0]])
@@ -27,8 +27,9 @@ class nn_epuck:
         self.rWheel = [0.033, 0.033]
         self.L = 0.14
 
-        self.v_max = 0.2
-        self.omage_max = 0.05
+        self.vL_max = 0.2
+        self.v_max = 0.07
+        self.omage_max = 0.2
 
         rospy.on_shutdown(self.stop)
 
@@ -51,16 +52,16 @@ class nn_epuck:
         vR = self.v[1,0]
         
         print(f'pre_linear: {vL, vR}')
-        if (vL > self.v_max):
-            vL = self.v_max
-        if (vL < -self.v_max):
-            vL = -self.v_max
+        if (vL > self.vL_max):
+            vL = self.vL_max
+        if (vL < -self.vL_max):
+            vL = -self.vL_max
 
         
-        if (vR > self.v_max):
-            vR = self.v_max
-        if (vR < -self.v_max):
-            vR = -self.v_max
+        if (vR > self.vL_max):
+            vR = self.vL_max
+        if (vR < -self.vL_max):
+            vR = -self.vL_max
 
         v = (vL*self.rWheel[0] + vR*self.rWheel[1]) / (self.rWheel[0] + self.rWheel[1])
         if (v > self.v_max):
@@ -71,7 +72,7 @@ class nn_epuck:
         omega = (vL - vR) / self.L
         if (omega > self.omage_max):
             omega = self.omage_max
-        if (omega < self.omage_max):
+        if (omega < -self.omage_max):
             omega = -self.omage_max
 
         self.vel.linear.x = v 
