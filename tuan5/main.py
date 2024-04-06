@@ -7,15 +7,27 @@ from typing import List
 
 #
 num_of_agent = 10
-start = np.array([])
-goal  = np.array([])
+start = np.array([0, -5])
+goal = np.array([0, 10])
 range_start = 3
 size_map = 20
 # robot
+# goal = np.array([0, 10])
 color = ['blue','green','yellow','purple','orange','pink','brown','lime','gray','cyan','yellowgreen','magenta','hotpink','skyblue']
 robot_radius = 0.3
-robot_known_goal = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-goal = np.array([0, 10])
+# set agents known goal
+num_agent_known_goal = 1
+num_agent_known_goal_ = num_agent_known_goal
+status_agents = []
+for i in range(num_of_agent):
+    status = np.random.randint(0, 2)
+    if num_agent_known_goal > 0:
+        status_agents.append(1)
+        num_agent_known_goal -= 1
+    else:
+        status_agents.append(0)
+
+# range effects of robot
 range_avoid = 3 * robot_radius
 range_static = 5 * robot_radius 
 range_friend = 7 * robot_radius
@@ -23,7 +35,7 @@ range_friend = 7 * robot_radius
 fig, ax = plt.subplots(subplot_kw={'aspect':'equal'})
 ax.set_xlim(-size_map,size_map)
 ax.set_ylim(-size_map,size_map)
-ax.set_title('Boid Flocking algorithm with {} robot'.format(num_of_agent))
+ax.set_title('Boid Flocking algorithm with {} robot and {} robot known Goal'.format(num_of_agent, num_agent_known_goal_))
 ax.grid(True)
 # visual goal
 goal_circle = Circle((goal[0], goal[1]), radius=0.4, color='red')
@@ -35,10 +47,12 @@ agents: List[Agent] = []
 robot_visuals = []
 path_visuals = []
 
+print('Start Boid Flocking algorithm with {} robot'.format(num_of_agent))
+
 for i in range(num_of_agent):
-    x = np.random.uniform(-range_start, range_start)
-    y = np.random.uniform(-range_start, range_start)
-    if robot_known_goal[i] == 1:
+    x = np.random.uniform(start[0] - range_start, start[0] + range_start)
+    y = np.random.uniform(start[1] - range_start, start[1] + range_start)
+    if status_agents[i] == 1:
         agents.append(Agent(i, True, np.array([x, y]), goal, color[i]))
     else:
         agents.append(Agent(i, False, np.array([x, y]), goal, color[i]))
@@ -61,5 +75,8 @@ def update(frame):
         visual.set_xdata(path[:,0])
         visual.set_ydata(path[:,1])
 
-animation = FuncAnimation(fig=fig, func=update, frames=1500, interval=50)    
+animation = FuncAnimation(fig=fig, func=update, frames=1500, interval=50)  
+
+# animation.save(filename="./tuan5/{}_agents.gif".format(num_of_agent), writer='pillow') 
+
 plt.show()

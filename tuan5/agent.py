@@ -4,12 +4,14 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.patches import Circle
 from typing import List
 
+key_color = 'black'
+
 class Agent: 
     def __init__(self, id: int, key:bool, init_pose: np.ndarray, goal_pose: np.ndarray ,color: str, 
-                 robot_radius:float=0.3, goal_gain:float=0.5, avoid_gain:float=0.5, friend_gain=2.0):
+                 robot_radius:float=0.3, goal_gain:float=0.8, avoid_gain:float=1.0, friend_gain=1.0):
         self.id = id
         self.key = key
-        self.robot_pose = init_pose.copy()
+        self.robot_pose = init_pose
         self.goal_pose = goal_pose.copy()
         self.robot_radius = robot_radius
         self.range_avoid = 5 * self.robot_radius
@@ -17,23 +19,27 @@ class Agent:
         self.range_friend = 9 * self.robot_radius
         
         self.color = color
-        self.circle = Circle((self.robot_pose[0], self.robot_pose[1]), radius= self.robot_radius,
-                             edgecolor= self.color, facecolor= self.color)
+        if (self.key == True):
+            self.circle = Circle((self.robot_pose[0], self.robot_pose[1]), radius= self.robot_radius+0.1,
+                             edgecolor= key_color, facecolor= key_color)
+        else:
+            self.circle = Circle((self.robot_pose[0], self.robot_pose[1]), radius= self.robot_radius,
+                                edgecolor= self.color, facecolor= self.color)
         self.path = [[init_pose[0], init_pose[1]]]
         
         self.angle = 0.0
         self.velocity = 0.0
-
-
+        self.min_velocity = 0.05
+        
         self.max_mag = 0.15
         self.goal_gain = goal_gain
         self.avoid_gain = avoid_gain
         self.friend_gain = friend_gain
         
-
     def updatePose(self, agent_position: List[np.ndarray]):
         # print(self.id)
         if self.goalReached():
+            print("Reach Goal!!")
             return
         # print (self.key)
         if (self.key == True):
@@ -41,21 +47,25 @@ class Agent:
         else:
             vector_list = [np.array([0.0, 0.0])]
         # print(vector_list)
-        random_flag=False
+        avoid_flag = False
         for i in range(len(agent_position)):
             if i == self.id: continue
+            sum_friend = 0
             dist = computeDistance(self.robot_pose, agent_position[i], 0.0)
             if dist < self.range_avoid: 
                 vector_list.append(self.avoidanceVector(agent_position[i]))
-                random_flag = True
-            if self.range_static < dist and dist < self.range_friend:
-                vector_list.append(self.friendVector(agent_position[i]))
+                avoid_flag = True
+            if avoid_flag == False: 
+                if self.range_static < dist and dist < self.range_friend:
+                    sum_friend +=1 
+                    vector_list.append(self.friendVector(agent_position[i]))
         # if random_flag == True:
         #     if np.random.rand() < 0.1:
         #         vector_list.append(np.array([self.max_mag * 0.5, np.random.uniform(-math.pi, math.pi)]))
         # print (vector_list)
         total_vector = sumOfListVectors(vector_list)
-        # print(total_vector)
+        # print(total_vector[0], total_vector[1])
+        if (total_vector[0] < self.min_velocity): total_vector[0] = 0.0
         self.robot_pose[0] += total_vector[0] * math.cos(total_vector[1])
         self.robot_pose[1] += total_vector[0] * math.sin(total_vector[1])
         self.angle = total_vector[1]
@@ -87,8 +97,8 @@ class Agent:
 
         if mag > self.max_mag: mag = self.max_mag
         if mag < -self.max_mag: mag = -self.max_mag
-
-        angle = computeAngle(other_pose , self.robot_pose)/2
+        
+        angle = computeAngle(other_pose , self.robot_pose)
         # print('friend:{}'.format(mag * self.friend_gain))
         return np.array([mag * self.friend_gain, angle])
 
