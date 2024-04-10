@@ -8,15 +8,15 @@ key_color = 'black'
 
 class Agent: 
     def __init__(self, id: int, key:bool, init_pose: np.ndarray, goal_pose: np.ndarray ,color: str, 
-                 robot_radius:float=0.3, goal_gain:float=0.8, avoid_gain:float=1.0, friend_gain=1.0):
+                 robot_radius:float=0.3, goal_gain:float=0.7, avoid_gain:float=1.0, friend_gain=1.1):
         self.id = id
         self.key = key
         self.robot_pose = init_pose
         self.goal_pose = goal_pose.copy()
         self.robot_radius = robot_radius
-        self.range_avoid = 5 * self.robot_radius
-        self.range_static = 7 * self.robot_radius
-        self.range_friend = 9 * self.robot_radius
+        self.range_avoid = 10 * self.robot_radius
+        self.range_static = 15 * self.robot_radius
+        self.range_friend = 20 * self.robot_radius
         
         self.color = color
         if (self.key == True):
@@ -25,6 +25,7 @@ class Agent:
         else:
             self.circle = Circle((self.robot_pose[0], self.robot_pose[1]), radius= self.robot_radius,
                                 edgecolor= self.color, facecolor= self.color)
+        self.agents: List[Agent] = []
         self.path = [[init_pose[0], init_pose[1]]]
         
         self.angle = 0.0
