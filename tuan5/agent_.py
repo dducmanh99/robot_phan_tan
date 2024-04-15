@@ -80,7 +80,7 @@ class Agent:
         for agent in self.agents:
             dist = computeDistance(self.robot_pose, agent.robot_pose, 0.0)
             if (dist < self.range_avoid):
-                vel_avoid = vel_avoid + self.robot_pose - agent.robot_pose
+                vel_avoid = vel_avoid + self.robot_pose - agent.robot_pose 
                 self.avoid_flag = True
         self.vel = self.vel + vel_avoid * self.avoid_gain
 

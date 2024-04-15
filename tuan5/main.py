@@ -6,7 +6,7 @@ from matplotlib.patches import Circle
 from typing import List
 
 #
-num_of_agent = 30
+num_of_agent = 10
 start = np.array([0, -30])
 goal = np.array([0, 30])
 range_start = 5
@@ -16,7 +16,7 @@ size_map = 50
 color = ['blue','green','yellow','purple','orange','pink','brown','lime','gray','cyan','yellowgreen','magenta','hotpink','skyblue']
 robot_radius = 0.3
 # set agents known goal
-num_agent_known_goal = 5
+num_agent_known_goal = 1
 num_agent_known_goal_ = num_agent_known_goal
 status_agents = []
 for i in range(num_of_agent):
@@ -45,6 +45,7 @@ plt.annotate("Goal", xy=(goal[0] + 0.4, goal[1]))
 print('Start Boid Flocking algorithm with {} robots'.format(num_of_agent))
 
 agents: List[Agent] = []
+agents_key: List[Agent] = []
 robot_visuals = []
 path_visuals = []
 
@@ -54,13 +55,14 @@ for i in range(num_of_agent):
     color_ = color[np.random.randint(0,9)]
     if status_agents[i] == 1:
         agents.append(Agent(i, True, np.array([x, y]), goal, color_))
+        agents_key.append(Agent(i, True, np.array([x, y]), goal, color_))
     else:
         agents.append(Agent(i, False, np.array([x, y]), goal, color_))
     robot_visuals.append(agents[-1].circle)
-    path = np.array(agents[-1].path)
 
-    # line = ax.plot(path[:, 0], path[:, 1], '-', c= agents[-1].color)[0]
-    # path_visuals.append(line)
+    path = np.array(agents_key[-1].path)
+    line = ax.plot(path[:, 0], path[:, 1], '-', c= agents_key[-1].color)[0]
+    path_visuals.append(line)
     
     ax.add_patch(agents[-1].circle)
 
@@ -83,6 +85,6 @@ def update(frame):
 
 animation = FuncAnimation(fig=fig, func=update, frames=1500, interval=50)  
 
-animation.save(filename="./tuan5/{}_agents.gif".format(num_of_agent), writer='pillow') 
-# plt.tight_layout()
-# plt.show()
+# animation.save(filename="./tuan5/{}_agents.gif".format(num_of_agent), writer='pillow') 
+plt.tight_layout()
+plt.show()
