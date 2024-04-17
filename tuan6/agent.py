@@ -4,14 +4,17 @@ import sys
 key_color = 'black'
 
 class Agent:
-    def __init__(self,  id: int, init_pose:np.ndarray, color: str,
-                 robot_radius:float=0.5):
+    def __init__(self,  id: int, init_pose:np.ndarray, init_angleKey:float, color: str,
+                 robot_radius:float=0.5, range_avoid:float=1.5, 
+                 goal_gain:float=0.001, avoid_gain:float=0.001):
         
         self.id = id 
         self.robot_pose = init_pose.copy()
         
         self.color = color
         self.robot_radius = robot_radius
+        self.range_avoid = range_avoid
+        self.goal_id = 0
 
         self.path = [[init_pose[0], init_pose[1]]]
         self.key_pos = []
@@ -19,40 +22,47 @@ class Agent:
         if (self.id == 0):
             self.circle = Circle((self.robot_pose[0], self.robot_pose[1]), radius= self.robot_radius,
                              edgecolor= key_color, facecolor= key_color) 
-            angle = - math.pi/2 
+            angle = init_angleKey 
             
             self.key_pos = [init_pose[0], init_pose[1], angle]
             
         else:
             self.circle = Circle((self.robot_pose[0], self.robot_pose[1]), radius= self.robot_radius,
                              edgecolor= self.color, facecolor= self.color)
-            
         
-        self.goalReach_flag = False
-        self.goal_gain = 0.001
         self.angle = 0.0
-        
-        
-    def update_pose(self,key_pos, goal):
+        self.goalReach_flag = False
+        self.goal_gain = goal_gain
+        self.avoid_gain = avoid_gain
+        self.agents: List[Agent] = []
+         
+    def update_pose(self,key_pos, goal, agents_pos: List[np.ndarray], obs: List[np.ndarray]):
         if self.goalReached(goal):
-            print("\n-----Reach Goal!!-----\n")
-            # sys.exit(1)
+            print(f'\n-----Reach Goal {self.goal_id} !!-----\n')
+            self.goal_id += 1 
+            # sys.exit(1) # close
             return
         
         V_pos = self.cal_V_pos(key_pos)
-        # print(key_pos)
         # print (V_pos)
 
+        vector_list = []
+        for i in range(len(obs)):
+            dist = computeDistance(self.robot_pose, obs[i], 0.0)
+            if dist < self.range_avoid:
+                    vector_list.append(self.avoidVector(obs[i]))
+
         if self.id == 0:
-            vector_list = self.nextVector(self.robot_pose, goal)
-            # total_vector = sumOfListVectors(vector_list)
-            total_vector = vector_list
+            next = self.nextVector(self.robot_pose, goal)
+            vector_list.append(next)
+
+            total_vector = sumOfListVectors(vector_list)
             if total_vector[0] < 0.15 :
                 total_vector[0] = 0.15
-            # print(f'pre: {self.robot_pose}')
+            
             self.robot_pose[0] += total_vector[0] * math.cos(total_vector[1])
             self.robot_pose[1] += total_vector[0] * math.sin(total_vector[1])
-            # print(total_vector[0] * math.cos(total_vector[1]))
+            
             # print(f'cur: {self.robot_pose}')
             self.angle = total_vector[1] -  math.pi/2
             self.key_pos = [self.robot_pose[0], self.robot_pose[1], self.angle]
@@ -63,24 +73,38 @@ class Agent:
             # print(V_pos)
             scale = 200
             next = np.array([V_pos[self.id][0], V_pos[self.id][1]])
-
             # print (f'next: {next}')
-            vector_list = self.nextVector(self.robot_pose, next)
-                # total_vector = sumOfListVectors(vector_list)
-            total_vector = vector_list
+            nextV = self.nextVector(self.robot_pose, next)
+            vector_list.append(nextV)
+            # print(vector_list)
+            for i in range(len(agents_pos)):
+                if i == self.id: continue
+                dist = computeDistance(self.robot_pose, agents_pos[i], 0.0)
+                # print(f'dist: {dist}')
+                if dist < self.range_avoid:
+                    # print(f'dist:{dist}')
+                    vector_list.append(self.avoidVector(agents_pos[i]))
+            
+            total_vector = sumOfListVectors(vector_list)
             # print(total_vector)
             self.robot_pose[0] += total_vector[0] * math.cos(total_vector[1])*scale
             self.robot_pose[1] += total_vector[0] * math.sin(total_vector[1])*scale
             self.angle = total_vector[1]
             self.path.append([self.robot_pose[0], self.robot_pose[1]])
-            # print(10)
+            
             # self.path.append([self.robot_pose[0], self.robot_pose[1]])
         # print(f'robot:{self.robot_pose}')
+
+    def avoidVector(self, other_pose: np.ndarray):
+        dist = computeDistance(self.robot_pose, other_pose, 0.0)
+        mag = (self.range_avoid - dist)/ (self.range_avoid - 2 * self.robot_radius)
+        angle = computeAngle(self.robot_pose, other_pose)
+
+        return np.array([mag * self.avoid_gain, angle])
 
     def nextVector(self, cur, next):
         mag = computeDistance(cur, next, 0.0)
         angle = computeAngle(next,cur) 
-
 
         return np.array([mag * self.goal_gain, angle])
         
