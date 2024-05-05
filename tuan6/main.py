@@ -57,7 +57,7 @@ for i in obs:
 
 print('V-shape formation with {} robots to {} goals'.format(num_of_agent, len(wayPoints)))
 
-## 
+## Set up multi robot
 agents: List[Agent] = []
 robot_visuals = []
 path_visuals = []
@@ -107,10 +107,10 @@ def update(frame):
         visual.set_ydata(path[:,1])
 
 ## Visual result
-animation = FuncAnimation(fig=fig, func=update, frames=1500, interval=50) 
+# animation = FuncAnimation(fig=fig, func=update, frames=1500, interval=50) 
 
 #save gif
-animation.save(filename="./tuan6/{}_agents.gif".format(num_of_agent), writer='pillow') 
+# animation.save(filename="./tuan6/{}_agents.gif".format(num_of_agent), writer='pillow') 
 
 plt.tight_layout()
 plt.show()

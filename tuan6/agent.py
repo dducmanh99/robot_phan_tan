@@ -94,6 +94,7 @@ class Agent:
             
             # self.path.append([self.robot_pose[0], self.robot_pose[1]])
         # print(f'robot:{self.robot_pose}')
+        print(self.agents[0].robot_pose)
 
     def avoidVector(self, other_pose: np.ndarray):
         dist = computeDistance(self.robot_pose, other_pose, 0.0)
