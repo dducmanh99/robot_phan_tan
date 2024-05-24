@@ -12,15 +12,17 @@ class MTT:
         self.agents: List[Agent] = []
         for i in range(agents_in_row):
             for j in range(agent_in_cols):
-                x = agent_first_pos[0] + j * agents_dis
-                y = agent_first_pos[1] + i * agents_dis
+                x = agent_first_pos[0] + (5+i*agents_dis)*math.cos(j*2*math.pi/agent_in_cols) 
+                y = agent_first_pos[1] + (5+i*agents_dis)*math.sin(j*2*math.pi/agent_in_cols) 
                 id = (i*agent_in_cols + j)
                 self.agents.append(Agent(id=id,init_pos=np.array([x,y]),visual=self.map_visual))
-        self.goal_range:float = 3.5
+        self.goal_range:float = 4.0
         self.avoidance_range:float = 0.8
         self.goal_gain: float = 0.02
         self.avoidance_gain: float = 0.3
         self.goalReach = []
+        self.randvel = np.zeros(2)
+        
 
     def run(self):
         for agent in self.agents:
@@ -28,7 +30,11 @@ class MTT:
                 agent.checkState()
                 if agent.state == 0:
                     # print("0")
-                    self.runRandom(agent)
+                    if agent.flag_rad == True:
+                        self.runRandom(agent)
+                    else:
+                        agent.randVel = np.random.uniform(-2, 2, 2)
+                        agent.flag_rad = True
                     self.findGoal(agent)
                     self.runAvoidance(agent)
                 elif(agent.state == 1):
@@ -44,6 +50,21 @@ class MTT:
                 agent.vel = np.zeros(2)
                 agent.run()
         # print(self.goalReach)
+    # def pubGoal(self,agent:Agent):
+    #     for goal in self.goals:
+    #         dis = computeDistance(goal,agent.global_pos,0.0)
+    #         if dis < self.goal_range:
+    #             # print("1")
+    #             if self.checkGoalReach(goal) == False:
+    #                 for other in self.agents:
+    #                     if other.global_pos[1] > 7.0 and np.random.rand(1) >= 0.4 : 
+    #                         other.checkState()
+    #                         if other.state == 0:
+    #                             other.goalList = goal
+    #                             self.goalReach.append(goal)
+    #                             # print(other.id, goal)
+    #                             break
+    
     def pubGoal(self,agent:Agent):
         for goal in self.goals:
             dis = computeDistance(goal,agent.global_pos,0.0)
@@ -51,17 +72,21 @@ class MTT:
                 # print("1")
                 if self.checkGoalReach(goal) == False:
                     for other in self.agents:
-                        if other.global_pos[1] > 7.0 and np.random.rand(1) >= 0.4 : 
+                        if computeDistance(other.global_pos, agent.global_pos, 0.0) < 12.0:
                             other.checkState()
                             if other.state == 0:
                                 other.goalList = goal
                                 self.goalReach.append(goal)
                                 # print(other.id, goal)
                                 break
-            
 
+    # def runRandom(self,agent:Agent):
+    #     velRand = np.array([np.random.rand(1)*2-1 , np.random.rand(1)])
+    #     agent.vel = agent.limitVelocity(vel=velRand)
+    #     agent.run()
+        
     def runRandom(self,agent:Agent):
-        velRand = np.array([np.random.rand(1)*2-1 , np.random.rand(1)])
+        velRand = np.array([agent.randVel[0] , agent.randVel[1]])
         agent.vel = agent.limitVelocity(vel=velRand)
         agent.run()
     

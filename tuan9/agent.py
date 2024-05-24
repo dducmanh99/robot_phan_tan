@@ -17,6 +17,8 @@ class Agent:
         self.goalList :np.ndarray = np.zeros(2)
         self.vel:np.ndarray = np.zeros(2)
         self.state:int = 0 #0 free 1gotogoal 2 reachgoal
+        self.flag_rad = False
+        self.randVel = np.zeros(2)
     
     
     def run(self):
@@ -44,9 +46,9 @@ class Agent:
             self.state = 1
     
     def limitPos(self):
-        if self.global_pos[0] > 33 or self.global_pos[0] < -4:
+        if self.global_pos[0] > 40 or self.global_pos[0] < -12:
             return True
-        if self.global_pos[1] > 17 or self.global_pos[0] < -5:
+        if self.global_pos[1] > 33 or self.global_pos[0] < -15:
             return True
         return False
     

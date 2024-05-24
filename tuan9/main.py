@@ -3,7 +3,7 @@ from agent import Agent
 from mtt import MTT
 
 goal_rows = 3
-goal_cols = 10
+goal_cols = 15
 
 resolution = [3,3]
 start_range = [0,8]
