@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.patches import Circle
+from matplotlib.axes import Axes
+from matplotlib.text import Text
 from typing import List
 import math 
 import numpy as np 

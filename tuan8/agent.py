@@ -44,7 +44,7 @@ class Agent:
                 rssi_list.append(10*math.log10(self.transmitter_power))
             else:
                 # free_loss = self.transmitter_power * self.transmitter_gain * np.random.uniform(0.8, 1) * self.receiver_gain *np.random.uniform(0.8, 1) * (self.wavelength/(4*math.pi*dist**2))
-                free_loss = self.transmitter_power * self.transmitter_gain * self.receiver_gain  * (self.wavelength/(4*math.pi*dist**2))
+                free_loss = self.transmitter_power * self.transmitter_gain * self.receiver_gain  * (self.wavelength/(2*math.pi*dist**2))
 
                 rssi_list.append(10*math.log10(free_loss))
 
